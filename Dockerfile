@@ -1,17 +1,23 @@
+# Use Python 3.10 for OpenEnv compatibility
 FROM python:3.10-slim
+
+# Set up a new user named "user" with user ID 1000 (HF requirement)
+RUN useradd -m -u 1000 user
+USER user
+ENV PATH="/home/user/.local/bin:$PATH"
 
 WORKDIR /app
 
-# Copy dependency files
-COPY pyproject.toml uv.lock* ./
-# Note: If 'pip install .' fails, use: RUN pip install fastapi uvicorn requests pydantic openai
-RUN pip install .
+# Copy dependency files first for faster building
+COPY --chown=user pyproject.toml ./ 
+# Install core dependencies
+RUN pip install --no-cache-dir fastapi uvicorn requests pydantic openai
 
-# Copy the rest of the code
-COPY . .
+# Copy the rest of your validated code
+COPY --chown=user . /app
 
-# Expose the FastAPI port
-EXPOSE 8000
+# Hugging Face Spaces MUST listen on port 7860
+EXPOSE 7860
 
-# FIXED: Removed 'server.' because app.py is in the root folder
-CMD ["python", "-m", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+# Launch Uvicorn pointing to your root app.py
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "7860"]

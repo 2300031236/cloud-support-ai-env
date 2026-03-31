@@ -1,0 +1,23 @@
+name: "cloud_support_v1"
+version: "1.0.0"
+description: "Simulated Cloud Triage environment for disk and network recovery."
+entrypoint: "server.app:app"
+
+# These must match your Observation Pydantic model
+observation_space:
+  type: "dict"
+  properties:
+    text: {type: "string"}
+    disk_usage: {type: "number"}
+    port_80_status: {type: "string"}
+
+# This must match your Action Pydantic model
+action_space:
+  type: "dict"
+  properties:
+    command: {type: "string"}
+
+tasks:
+  - id: "full_recovery"
+    difficulty: "medium"
+    description: "Clear the disk and open the firewall to restore service."
